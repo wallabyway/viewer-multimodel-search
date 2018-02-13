@@ -1,9 +1,9 @@
 # viewer-multimodel-search
 Forge Viewer now supports search across multi-models
 
-![multi](multisearch.gif)
+Demo: [LIVE SITE](https://wallabyway.github.io/viewer-multimodel-search/)
 
-Demo: 
+![multi](multisearch.gif)
 
 With the release of version 4.0 of the Viewer, you can now use the model browser to search across multiple models.
 
