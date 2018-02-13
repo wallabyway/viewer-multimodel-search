@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Search Multi-model</title>
+        <meta charset="utf-8">
+        <link rel="shortcut icon" href="#" />
+        <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=no" />
+
+        <!-- Forge Viewer v4.0 -->
+        <link  href="https://developer.api.autodesk.com/viewingservice/v1/viewers/style.min.css?v=v4.0" rel="stylesheet" type="text/css">
+        <script src="https://developer.api.autodesk.com/viewingservice/v1/viewers/three.min.js?v=v4.0"></script>
+        <script src="https://developer.api.autodesk.com/viewingservice/v1/viewers/viewer3D.js?v=v4.0"></script>
+
+        <style> h2 {font-family:roboto; position:absolute; bottom:10px; right: 10px; margin:20px; color:darkblue; z-index:1;} </style>
+
+    </head>
+    <body onload="initializeViewer();" style="margin:0">
+        <div id="forgeViewer" ></div>
+        <h2> <a href="github.com/wallabyway/viewer-multimodel-search">GitHub</a> </h2>
+    </body>
+
+    <script>
+        var viewerApp;
+
+        function initializeViewer() {
+            var viewer, options;
+            var urnRevit = "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dnJwYXJ0eTEvcmFjX2FsbHZpZXdzMy5ydnQ";
+            var urnHandsaw = "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dnJwYXJ0eTEvSGFuZF9Sb3V0ZXIuZjNk";
+            var urnLevel1 = "dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6dnJwYXJ0eTEvRG9nX0hvdXNlXzIwMTZfQ2xhc3NpZmllZF9XaXRoTWF0ZXJpYWxUZXh0dXJlLmR3Zg";
+
+
+            function getViewingOptions() {
+                options = {};
+                options.env = 'AutodeskProduction';
+                options.useADP = false;
+                options.useConsolidation = true;
+
+                options.getAccessToken = function(onSuccess) {
+                    fetch(`https://0rwcyzgoj9.execute-api.us-east-1.amazonaws.com/vrokit/api/token`).then(r => r.json()).then( accessTokenResponse=> {
+                        console.log(accessTokenResponse);
+                            onSuccess(
+                                accessTokenResponse.access_token,
+                                accessTokenResponse.expires_in
+                            );
+                        });
+                }
+                return options;
+            }
+
+            function onLoadSuccessViewer() {
+                var viewables = viewerApp.bubble.search({ 'type': 'geometry' });
+                if (viewables.length < 1) return;
+                viewerApp.selectItem(viewables[0].data);
+            }
+
+            function onLoadSuccess(doc) {
+                var viewables = viewerApp.bubble.search({ 'type': 'geometry' });
+                const path = doc.getViewablePath(viewables[0].data);
+                console.log(viewables);
+                const posOptions = { 
+                    placementTransform: (new THREE.Matrix4()).setPosition({x:1,y:100,z:1}).scale({x:2,y:2,z:2}) 
+                };
+                var viewables = viewerApp.bubble.search({ 'type': 'geometry' });
+                let viewer = viewerApp.getCurrentViewer();
+                viewer.loadModel(path, posOptions);
+            };
+
+            function onInitialized() {
+                viewerApp = new Autodesk.Viewing.ViewingApplication('forgeViewer');
+                viewerApp.registerViewer( viewerApp.k3D, Autodesk.Viewing.Private.GuiViewer3D );   
+                viewerApp.loadDocument( "urn:"+urnHandsaw, onLoadSuccessViewer);
+                window.setTimeout(e => 
+                    viewerApp.loadDocument( "urn:"+urnLevel1, onLoadSuccess), 3000);
+
+            };
+            options = getViewingOptions();
+            Autodesk.Viewing.Initializer( options, onInitialized);
+        }
+        
+    </script>
+</html>
